@@ -2901,6 +2901,7 @@ function! fugitive#BufReadStatus(...) abort
     if len(pull) && get(props, 'branch.ab') !~# ' -0$'
       call s:AddLogSection('Unpulled from ' . pull, [head . '..' . pull])
     endif
+    call s:AddLogSection('Recent commits', [head, '-n10'])
 
     setlocal nomodified readonly noswapfile
     doautocmd BufReadPost
