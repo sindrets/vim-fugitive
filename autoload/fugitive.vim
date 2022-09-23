@@ -2627,11 +2627,15 @@ function! s:AddSection(label, lines, ...) abort
 endfunction
 
 function! s:QueryLog(refspec, limit) abort
-  let [log, exec_error] = s:LinesError(['log', '-n', '' . a:limit, '--pretty=format:%h%x09%s'] + a:refspec + ['--'])
+  let l:max_count = []
+  if a:limit > -1
+    let l:max_count = [ '-n', '' . a:limit ]
+  endif
+  let [log, exec_error] = s:LinesError(['log', '--pretty=format:%h%x09%s'] + l:max_count + a:refspec + ['--'])
   call map(log, 'split(v:val, "\t", 1)')
   call map(log, '{"type": "Log", "commit": v:val[0], "subject": join(v:val[1 : -1], "\t")}')
   let result = {'error': exec_error ? 1 : 0, 'overflow': 0, 'entries': log}
-  if len(log) == a:limit
+  if a:limit > -1 && len(log) == a:limit
     call remove(log, -1)
     let result.overflow = 1
   endif
@@ -2938,6 +2942,7 @@ function! fugitive#BufReadStatus(...) abort
     if len(pull_ref) && get(props, 'branch.ab') !~# ' -0$'
       call s:AddLogSection('Unpulled from ' . pull_short, s:QueryLogRange(head, pull_ref))
     endif
+    call s:AddLogSection('Recent commits', s:QueryLog([head, '-n10'], -1))
 
     setlocal nomodified readonly noswapfile
     doautocmd BufReadPost
