@@ -4877,6 +4877,8 @@ function! s:StageInline(mode, ...) abort
       endif
     endif
   endwhile
+  " Trigger re-computation of folds
+  exe 'setl foldmethod=' . &foldmethod
   return lnum
 endfunction
 
