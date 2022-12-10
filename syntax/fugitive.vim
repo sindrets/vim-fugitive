@@ -24,6 +24,7 @@ syn match fugitiveDone /^done\>/ contained containedin=@fugitiveSection nextgrou
 syn match fugitiveStop /^stop\>/ contained containedin=@fugitiveSection nextgroup=fugitiveHash skipwhite
 syn match fugitiveModifier /^[MADRCU?]\{1,2} / contained containedin=@fugitiveSection
 syn match fugitiveSymbolicRef /\.\@!\%(\.\.\@!\|[^[:space:][:cntrl:]\:.]\)\+\.\@<!/ contained
+syn match fugitiveStashRef /^stash@{\d\+}/ contained containedin=@fugitiveSection
 syn match fugitiveHash /^\x\{4,\}\S\@!/ contained containedin=@fugitiveSection
 syn match fugitiveHash /\S\@<!\x\{4,\}\S\@!/ contained
 
@@ -51,6 +52,7 @@ hi def link fugitiveStagedModifier Typedef
 hi def link fugitiveInstruction Type
 hi def link fugitiveStop Function
 hi def link fugitiveHash Identifier
+hi def link fugitiveStashRef fugitiveHash
 hi def link fugitiveSymbolicRef Function
 hi def link fugitiveCount Number
 

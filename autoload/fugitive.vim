@@ -2582,6 +2582,13 @@ function! s:ReplaceCmd(cmd) abort
   endif
 endfunction
 
+function! s:QueryStash(refspec, limit) abort
+  let lines = s:LinesError(['stash', 'list', '-n', '' . a:limit, '--pretty=format:%gd%x09%s'] + a:refspec + ['--'])[0]
+  call map(lines, 'split(v:val, "\t", 1)')
+  call map(lines, '{"type": "Log", "commit": v:val[0], "subject": join(v:val[1 : -1], "\t")}')
+  return lines
+endfunction
+
 function! s:FormatLog(dict) abort
   return a:dict.commit . ' ' . a:dict.subject
 endfunction
@@ -2655,6 +2662,16 @@ function! s:AddLogSection(label, log) abort
   endif
   let label = a:label . ' (' . len(a:log.entries) . (a:log.overflow ? '+' : '') . ')'
   call append(line('$'), ['', label] + s:Format(a:log.entries))
+endfunction
+
+function! s:AddStashSection(label, refspec) abort
+  let stash = s:QueryStash(a:refspec, 5)
+  if empty(stash)
+    return
+  else
+    let label = a:label . ' (' . len(stash) . ')'
+  endif
+  call append(line('$'), ['', label] + s:Format(stash))
 endfunction
 
 let s:rebase_abbrevs = {
@@ -2943,6 +2960,7 @@ function! fugitive#BufReadStatus(...) abort
       call s:AddLogSection('Unpulled from ' . pull_short, s:QueryLogRange(head, pull_ref))
     endif
     call s:AddLogSection('Recent commits', s:QueryLog([head, '-n10'], -1))
+    call s:AddStashSection('Recent stashes', [])
 
     setlocal nomodified readonly noswapfile
     doautocmd BufReadPost
@@ -4430,7 +4448,7 @@ function! s:StageInfo(...) abort
         \ 'filename': text,
         \ 'relative': copy(relative),
         \ 'paths': map(copy(relative), 's:Tree() . "/" . v:val'),
-        \ 'commit': matchstr(getline(lnum), '^\%(\%(\x\x\x\)\@!\l\+\s\+\)\=\zs[0-9a-f]\{4,\}\ze '),
+        \ 'commit': matchstr(getline(lnum), '^stash@{\d\+}\|\%(\%(\x\x\x\)\@!\l\+\s\+\)\=\zs[0-9a-f]\{4,\}\ze '),
         \ 'status': matchstr(getline(lnum), '^[A-Z?]\ze \|^\%(\x\x\x\)\@!\l\+\ze [0-9a-f]'),
         \ 'submodule': get(file, 'submodule', ''),
         \ 'index': index}
