@@ -1787,7 +1787,7 @@ function! fugitive#Path(url, ...) abort
   if !empty(argdir) && !s:SameRepo(argdir, repo)
     let file = ''
   elseif len(dir_s) && s:cpath(strpart(url, 0, len(dir_s)), dir_s)
-    let file = '/.git' . strpart(url, len(dir_s)-1)
+    let file = '/' . fnamemodify(dir_s, ":h:t") . strpart(url, len(dir_s)-1)
   elseif len(tree) && s:cpath(url[0 : len(tree)]) ==# s:cpath(tree . '/')
     let file = url[len(tree) : -1]
   elseif s:cpath(url) ==# s:cpath(tree)
